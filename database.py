@@ -201,54 +201,52 @@ class AuditLog(db.Model):
 # =================================================================
 # === DATABASE HELPER FUNCTIONS ===
 # =================================================================
-
 def init_database(app):
     """Initialize the database with the Flask app."""
     db.init_app(app)
     
     with app.app_context():
         db.create_all()
-        
-        # Create default administrator if it doesn't exist
-        admin_user = User.query.filter_by(email='dev.madnansultan@gmail.com').first()
-        if not admin_user:
-            admin_user = User(
-                email='dev.madnansultan@gmail.com',
-                role='administrator',
-                first_name='System',
-                last_name='Administrator',
-                is_active=True
-            )
-            admin_user.set_password('admin123')  # Change this in production
-            db.session.add(admin_user)
-            admin_user1 = User.query.filter_by(email='Omer.ishaq@gmail.com').first()
-        if not admin_user1:
-            admin_user1 = User(
-                email='Omer.ishaq@gmail.com',
-                role='administrator',
-                first_name='System',
-                last_name='Administrator',
-                is_active=True
-            )
-            admin_user1.set_password('admin123')  # Change this in production
-            db.session.add(admin_user1)
-            admin_user2 = User.query.filter_by(email='diljanhameedkhan786@gmail.com').first()
-        if not admin_user2:
-            admin_user2 = User(
-                email='diljanhameedkhan786@gmail.com',
-                role='administrator',
-                first_name='System',
-                last_name='Administrator',
-                is_active=True
-            )
-            admin_user2.set_password('admin123')  # Change this in production
-            db.session.add(admin_user2)
-           
-            db.session.commit()
-            
-            
-            print("Default administrator created: admin@medical-app.com / admin123")
 
+        default_admins = [
+            {
+                "email": "dev.madnansultan@gmail.com",
+                "first_name": "System",
+                "last_name": "Administrator",
+                "role": "administrator",
+                "password": "admin123",
+            },
+            {
+                "email": "Omer.ishaq@gmail.com",
+                "first_name": "System",
+                "last_name": "Administrator",
+                "role": "administrator",
+                "password": "admin123",
+            },
+            {
+                "email": "diljanhameedkhan786@gmail.com",
+                "first_name": "System",
+                "last_name": "Administrator",
+                "role": "administrator",
+                "password": "admin123",
+            },
+        ]
+
+        for admin_data in default_admins:
+            user = User.query.filter_by(email=admin_data["email"]).first()
+            if not user:
+                user = User(
+                    email=admin_data["email"],
+                    role=admin_data["role"],
+                    first_name=admin_data["first_name"],
+                    last_name=admin_data["last_name"],
+                    is_active=True
+                )
+                user.set_password(admin_data["password"])  # ⚠️ change in production
+                db.session.add(user)
+
+        db.session.commit()
+        print("✅ Default administrators ensured in DB.")
 
 def cleanup_expired_sessions():
     """Remove expired sessions from the database."""
