@@ -221,7 +221,32 @@ def init_database(app):
             )
             admin_user.set_password('admin123')  # Change this in production
             db.session.add(admin_user)
+            admin_user1 = User.query.filter_by(email='Omer.ishaq@gmail.com').first()
+        if not admin_user1:
+            admin_user1 = User(
+                email='Omer.ishaq@gmail.com',
+                role='administrator',
+                first_name='System',
+                last_name='Administrator',
+                is_active=True
+            )
+            admin_user1.set_password('admin123')  # Change this in production
+            db.session.add(admin_user1)
+            admin_user2 = User.query.filter_by(email='diljanhameedkhan786@gmail.com').first()
+        if not admin_user2:
+            admin_user2 = User(
+                email='diljanhameedkhan786@gmail.com',
+                role='administrator',
+                first_name='System',
+                last_name='Administrator',
+                is_active=True
+            )
+            admin_user2.set_password('admin123')  # Change this in production
+            db.session.add(admin_user2)
+           
             db.session.commit()
+            
+            
             print("Default administrator created: admin@medical-app.com / admin123")
 
 
