@@ -645,7 +645,7 @@ def create_patient():
 
         # Link patient to current doctor if creator is a doctor; if admin, optionally link to provided primary_doctor_id
         try:
-            current_user_id = get_jwt_identity()
+            current_user_id = int(get_jwt_identity())
             creator = User.query.get(current_user_id)
             if creator and creator.role == 'doctor':
                 assign_patient_to_doctor(creator.id, new_patient_data['patient_id'])

@@ -269,7 +269,7 @@ def role_required(allowed_roles):
         @wraps(f)
         def decorated_function(*args, **kwargs):
             # Get current user from JWT
-            current_user_id = get_jwt_identity()
+            current_user_id = int(get_jwt_identity())
             if not current_user_id:
                 return jsonify({'error': 'Authentication required', 'code': 'AUTH_REQUIRED'}), 401
             
@@ -312,7 +312,7 @@ def patient_access_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         # Get current user from JWT
-        current_user_id = get_jwt_identity()
+        current_user_id = int(get_jwt_identity())
         user = User.query.get(current_user_id)
         
         # Get patient_id from request (could be in URL params, JSON body, or query params)
@@ -357,7 +357,7 @@ def log_access(f):
     """Decorator to log all access to protected routes."""
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        current_user_id = get_jwt_identity()
+        current_user_id = int(get_jwt_identity())
         
         # Log the access attempt
         log_access_event(

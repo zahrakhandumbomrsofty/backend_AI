@@ -132,7 +132,7 @@ def register_auth_routes(app):
             
             # Create JWT token
             access_token = create_access_token(
-                identity=user.id,
+                identity=str(user.id),
                 expires_delta=timedelta(hours=24)
             )
             
@@ -224,7 +224,7 @@ def register_auth_routes(app):
     def logout():
         """User logout endpoint."""
         try:
-            current_user_id = get_jwt_identity()
+            current_user_id = int(get_jwt_identity())
             session_token = request.headers.get('X-Session-Token')
             
             if session_token:
@@ -261,7 +261,7 @@ def register_auth_routes(app):
     def logout_all():
         """Logout from all devices/sessions."""
         try:
-            current_user_id = get_jwt_identity()
+            current_user_id = int(get_jwt_identity())
             
             # Revoke all user sessions
             revoked_count = revoke_user_sessions(current_user_id)
@@ -293,7 +293,7 @@ def register_auth_routes(app):
     def refresh_session():
         """Refresh user session to extend timeout."""
         try:
-            current_user_id = get_jwt_identity()
+            current_user_id = int(get_jwt_identity())
             session_token = request.headers.get('X-Session-Token')
             
             if not session_token:
@@ -338,7 +338,7 @@ def register_auth_routes(app):
     def get_profile():
         """Get current user profile."""
         try:
-            current_user_id = get_jwt_identity()
+            current_user_id = int(get_jwt_identity())
             user = User.query.get(current_user_id)
             
             if not user or not user.is_active:
@@ -382,7 +382,7 @@ def register_user_management_routes(app):
             users = User.query.all()
             users_data = [user.to_dict() for user in users]
             
-            current_user_id = get_jwt_identity()
+            current_user_id = int(get_jwt_identity())
             log_access_event(
                 user_id=current_user_id,
                 action='VIEW_ALL_USERS',
@@ -436,7 +436,7 @@ def register_user_management_routes(app):
             db.session.add(new_user)
             db.session.commit()
             
-            current_user_id = get_jwt_identity()
+            current_user_id = int(get_jwt_identity())
             log_access_event(
                 user_id=current_user_id,
                 action='CREATE_USER',
@@ -469,7 +469,7 @@ def register_user_management_routes(app):
             patient_id = data['patient_id']
             success, message = assign_patient_to_doctor(user_id, patient_id)
             
-            current_user_id = get_jwt_identity()
+            current_user_id = int(get_jwt_identity())
             
             if success:
                 log_access_event(
