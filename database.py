@@ -1,13 +1,13 @@
 # database.py - DATABASE MODELS AND CONFIGURATION
 
 import os
-import sqlite3
 from datetime import datetime, timedelta
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 import secrets
 import string
 import sqlalchemy
+from google.cloud.sql.connector import Connector
 
 db = SQLAlchemy()
 
@@ -15,46 +15,35 @@ db = SQLAlchemy()
 # === DATABASE CONNECTION HELPER ===
 # =================================================================
 
-def get_db_engine():
+def getconn():
     """
-    Initializes a database connection engine for Cloud SQL Unix socket connection.
+    Create a connection to Cloud SQL using the Cloud SQL connector.
     """
     # Get Cloud SQL connection parameters from environment variables
     db_user = os.environ.get("DB_USER")
     db_pass = os.environ.get("DB_PASS")
     db_name = os.environ.get("DB_NAME")
-    unix_socket_path = os.environ.get("INSTANCE_UNIX_SOCKET")
+    instance_connection_name = os.environ.get("INSTANCE_CONNECTION_NAME")  # PROJECT:REGION:INSTANCE format
     
-    if not all([db_user, db_pass, db_name, unix_socket_path]):
-        raise ValueError("Missing required Cloud SQL environment variables: DB_USER, DB_PASS, DB_NAME, INSTANCE_UNIX_SOCKET")
-
-    # PostgreSQL requires a specific suffix for the socket path.
-    unix_socket_path = f"{unix_socket_path}/.s.PGSQL.5432"
-
-    # Construct the connection URL for the Unix socket.
-    db_uri = f"postgresql+pg8000://{db_user}:{db_pass}@/{db_name}?unix_sock={unix_socket_path}"
+    if not all([db_user, db_pass, db_name, instance_connection_name]):
+        raise ValueError("Missing required Cloud SQL environment variables: DB_USER, DB_PASS, DB_NAME, INSTANCE_CONNECTION_NAME")
     
-    engine = sqlalchemy.create_engine(db_uri)
-    return engine
+    connector = Connector()
+    conn = connector.connect(
+        instance_connection_name,
+        "pg8000",
+        user=db_user,
+        password=db_pass,
+        db=db_name
+    )
+    return conn
 
 def get_database_uri():
     """
-    Get the database URI for SQLAlchemy configuration using Cloud SQL Unix socket connection.
+    Get the database URI for SQLAlchemy configuration using Cloud SQL connector.
     """
-    # Get Cloud SQL connection parameters from environment variables
-    db_user = os.environ.get("DB_USER")
-    db_pass = os.environ.get("DB_PASS")
-    db_name = os.environ.get("DB_NAME")
-    unix_socket_path = os.environ.get("INSTANCE_UNIX_SOCKET")
-    
-    if not all([db_user, db_pass, db_name, unix_socket_path]):
-        raise ValueError("Missing required Cloud SQL environment variables: DB_USER, DB_PASS, DB_NAME, INSTANCE_UNIX_SOCKET")
-
-    # PostgreSQL requires a specific suffix for the socket path.
-    unix_socket_path = f"{unix_socket_path}/.s.PGSQL.5432"
-
-    # Construct the connection URL for the Unix socket.
-    return f"postgresql+pg8000://{db_user}:{db_pass}@/{db_name}?unix_sock={unix_socket_path}"
+    # Return the URI that will use the custom creator function
+    return "postgresql+pg8000://"
 
 # =================================================================
 # === DATABASE MODELS ===

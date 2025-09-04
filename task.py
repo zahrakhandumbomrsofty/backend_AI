@@ -16,9 +16,10 @@ import google.generativeai as genai
 
 # Import authentication and database modules
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from database import db, init_database, assign_patient_to_doctor, User, get_database_uri
+from database import db, init_database, assign_patient_to_doctor, User, get_database_uri, getconn
 from auth import jwt, mail, role_required, patient_access_required, log_access, require_active_session
 from auth_routes import register_auth_routes, register_user_management_routes
+import sqlalchemy
 
 load_dotenv()
 app = Flask(__name__)
@@ -33,9 +34,16 @@ app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-pro
 app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', 'jwt-secret-key-change-in-production')
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = False  # We handle expiration with sessions
 
-# Database configuration
+# Database configuration - Create engine with Cloud SQL connector
+engine = sqlalchemy.create_engine(
+    "postgresql+pg8000://",
+    creator=getconn,
+)
 app.config['SQLALCHEMY_DATABASE_URI'] = get_database_uri()
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+    'creator': getconn
+}
 
 # Mail configuration for MFA
 app.config['MAIL_SERVER'] = os.getenv('MAIL_SERVER', 'smtp.gmail.com')
